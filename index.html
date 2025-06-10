@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Task Manager</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    h1 {
+      text-align: center;
+    }
+    form, .controls, .task-list {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    input, select, button {
+      padding: 8px;
+      margin: 5px 0;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .task {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+    }
+    .task.done {
+      text-decoration: line-through;
+      color: gray;
+    }
+    .task-controls {
+      display: flex;
+      gap: 10px;
+    }
+    .filters, .sorters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .tag {
+      font-size: 0.8em;
+      background: #eee;
+      padding: 2px 6px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Task Manager</h1>
+
+  <form id="taskForm">
+    <input type="text" id="title" placeholder="Task Title" required />
+    <input type="date" id="dueDate" required />
+    <select id="type">
+      <option value="home">Home</option>
+      <option value="school">School</option>
+      <option value="work">Work</option>
+      <option value="project1">Project1</option>
+      <option value="project2">Project2</option>
+    </select>
+    <select id="priority">
+      <option value="urgent">Urgent</option>
+      <option value="high">High</option>
+      <option value="med">Medium</option>
+      <option value="low">Low</option>
+    </select>
+    <button type="submit">Add Task</button>
+  </form>
+
+  <div class="controls">
+    <div class="filters">
+      <label>Filter:
+        <select id="filterStatus">
+          <option value="all">All</option>
+          <option value="pending">Pending</option>
+          <option value="completed">Completed</option>
+        </select>
+      </label>
+    </div>
+    <div class="sorters">
+      <label>Sort:
+        <select id="sortOption">
+          <option value="dueDate">Due Date</option>
+          <option value="priority">Priority</option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <div class="task-list" id="taskList"></div>
+
+  <script>
+    const taskForm = document.getElementById('taskForm');
+    const taskList = document.getElementById('taskList');
+    const filterStatus = document.getElementById('filterStatus');
+    const sortOption = document.getElementById('sortOption');
+
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+    function saveTasks() {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    function renderTasks() {
+      taskList.innerHTML = '';
+      let filtered = tasks;
+
+      // Filtering
+      if (filterStatus.value !== 'all') {
+        const completed = filterStatus.value === 'completed';
+        filtered = filtered.filter(task => task.done === completed);
+      }
+
+      // Sorting
+      if (sortOption.value === 'dueDate') {
+        filtered.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+      } else if (sortOption.value === 'priority') {
+        const order = { urgent: 1, high: 2, med: 3, low: 4 };
+        filtered.sort((a, b) => order[a.priority] - order[b.priority]);
+      }
+
+      // Display
+      filtered.forEach((task, index) => {
+        const div = document.createElement('div');
+        div.className = 'task' + (task.done ? ' done' : '');
+        div.innerHTML = `
+          <div>
+            <strong>${task.title}</strong> - 
+            <span class="tag">${task.type}</span> | 
+            <span class="tag">${task.priority}</span> | 
+            <span>${task.dueDate}</span>
+          </div>
+          <div class="task-controls">
+            <button onclick="toggleDone(${index})">${task.done ? 'Undo' : 'Done'}</button>
+            <button onclick="deleteTask(${index})">Delete</button>
+          </div>
+        `;
+        taskList.appendChild(div);
+      });
+    }
+
+    taskForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const newTask = {
+        title: taskForm.title.value,
+        dueDate: taskForm.dueDate.value,
+        type: taskForm.type.value,
+        priority: taskForm.priority.value,
+        done: false
+      };
+      tasks.push(newTask);
+      saveTasks();
+      renderTasks();
+      taskForm.reset();
+    });
+
+    function toggleDone(index) {
+      tasks[index].done = !tasks[index].done;
+      saveTasks();
+      renderTasks();
+    }
+
+    function deleteTask(index) {
+      tasks.splice(index, 1);
+      saveTasks();
+      renderTasks();
+    }
+
+    filterStatus.addEventListener('change', renderTasks);
+    sortOption.addEventListener('change', renderTasks);
+
+    renderTasks();
+  </script>
+</body>
+</html>
