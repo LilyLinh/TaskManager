@@ -1,226 +1,499 @@
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Task Manager Enhanced</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Colorful Minimal Task Manager with Stickers</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <style>
+    /* Base and fonts */
     body {
-      font-family: Arial, sans-serif;
-      margin: 2rem;
-      background: #f4f4f4;
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #e0f7fa, #fff9c4);
+      color: #222;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+      user-select: none;
     }
+
     h1 {
-      text-align: center;
+      font-weight: 700;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color: #00796b;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
     }
+
     form, .filters {
+      background: rgba(255 255 255 / 0.9);
+      padding: 1rem 1.5rem;
+      border-radius: 14px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      max-width: 450px;
+      width: 100%;
+      margin-bottom: 2rem;
+    }
+
+    form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem 1.5rem;
+      align-items: center;
+    }
+
+    form input[type="text"],
+    form textarea,
+    form select,
+    form input[type="date"] {
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 2px solid #b2dfdb;
+      transition: border-color 0.3s ease;
+      background-color: #f9fbe7;
+      color: #004d40;
+      resize: none;
+    }
+
+    form input[type="text"]:focus,
+    form textarea:focus,
+    form select:focus,
+    form input[type="date"]:focus {
+      border-color: #00796b;
+      outline: none;
+      background-color: #e0f2f1;
+    }
+
+    form textarea {
+      grid-column: 1 / -1;
+      resize: vertical;
+    }
+
+    form select {
+      cursor: pointer;
+    }
+
+    form button {
+      grid-column: 2 / 3;
+      justify-self: end;
+      background: #00796b;
+      border: none;
+      color: white;
+      font-weight: 700;
+      padding: 12px 24px;
+      font-size: 1.1rem;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0, 121, 107, 0.4);
+    }
+
+    form button:hover {
+      background-color: #004d40;
+      box-shadow: 0 6px 14px rgba(0, 77, 64, 0.6);
+    }
+
+    /* Filters */
+    .filters {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
-      background: white;
-      padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px #ccc;
-      margin-bottom: 1rem;
+      gap: 1rem;
+      justify-content: center;
+      max-width: 450px;
     }
-    form > * {
-      flex: 1 1 150px;
+
+    .filters input[type="text"],
+    .filters select {
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 2px solid #b2dfdb;
+      background-color: #f9fbe7;
+      color: #004d40;
+      font-size: 1rem;
+      min-width: 120px;
+      flex-grow: 1;
+      transition: border-color 0.3s ease;
     }
-    .task-list {
-      margin-top: 1rem;
+
+    .filters input[type="text"]:focus,
+    .filters select:focus {
+      border-color: #00796b;
+      outline: none;
+      background-color: #e0f2f1;
     }
+
+    #clearFilters {
+      background: #f06292;
+      color: white;
+      border: none;
+      border-radius: 14px;
+      padding: 10px 18px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(240, 98, 146, 0.4);
+      transition: background-color 0.3s ease;
+      flex-shrink: 0;
+    }
+
+    #clearFilters:hover {
+      background-color: #c2185b;
+      box-shadow: 0 6px 14px rgba(194, 24, 91, 0.6);
+    }
+
+    /* Task list */
+    #taskList {
+      max-width: 480px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      outline: none;
+    }
+
     .task {
       background: white;
-      padding: 1rem;
-      border-radius: 6px;
-      margin-bottom: 10px;
+      border-radius: 18px;
+      padding: 1rem 1.2rem;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 1px 3px #bbb;
+      gap: 1rem;
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+      cursor: default;
     }
+    .task:hover {
+      box-shadow: 0 8px 22px rgba(0,0,0,0.12);
+      transform: translateY(-3px);
+    }
+
     .task.done {
-      text-decoration: line-through;
       opacity: 0.6;
+      text-decoration: line-through;
     }
-    select, input[type="text"], input[type="date"], textarea, button {
-      padding: 6px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
+
+    .task > div:first-child {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
-    textarea {
-      resize: vertical;
+
+    /* Stickers (emojis) for task type */
+    .sticker {
+      font-size: 1.8rem;
+      margin-right: 0.5rem;
+      user-select: none;
+      filter: drop-shadow(0 0 1px rgba(0,0,0,0.15));
+      transition: transform 0.2s ease;
     }
-    .priority-urgent { border-left: 5px solid red; }
-    .priority-high { border-left: 5px solid orange; }
-    .priority-medium { border-left: 5px solid yellowgreen; }
-    .priority-low { border-left: 5px solid gray; }
+    .task:hover .sticker {
+      transform: scale(1.1);
+    }
+
+    .task strong {
+      font-size: 1.2rem;
+      color: #004d40;
+      display: flex;
+      align-items: center;
+    }
+
+    .task small {
+      font-size: 0.9rem;
+      color: #00796b;
+      font-style: italic;
+      margin-left: 2.4rem; /* align with stickers */
+      user-select: text;
+    }
+
+    .meta {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      color: #00796b;
+      font-weight: 600;
+      user-select: none;
+    }
+
+    /* Color badges */
+    .badge {
+      padding: 2px 8px;
+      border-radius: 14px;
+      text-transform: capitalize;
+      color: white;
+      user-select: none;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      display: inline-block;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .badge.feature {
+      background: #4db6ac; /* teal */
+    }
+    .badge.bug {
+      background: #f06292; /* pink */
+    }
+    .badge.chore {
+      background: #ba68c8; /* purple */
+    }
+
+    .priority-badge {
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      color: white;
+      user-select: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .priority-badge.urgent {
+      background: #d32f2f; /* red */
+      box-shadow: 0 2px 10px rgba(211,47,47,0.7);
+    }
+    .priority-badge.high {
+      background: #f57c00; /* orange */
+      box-shadow: 0 2px 10px rgba(245,124,0,0.7);
+    }
+    .priority-badge.medium {
+      background: #fbc02d; /* yellow */
+      color: #444;
+      box-shadow: 0 2px 10px rgba(251,192,45,0.7);
+    }
+    .priority-badge.low {
+      background: #388e3c; /* green */
+      box-shadow: 0 2px 10px rgba(56,142,60,0.7);
+    }
+
+    /* Due date style */
+    .meta span:last-child {
+      color: #555;
+      font-weight: 500;
+      font-style: normal;
+    }
+
+    /* Action buttons */
+    .task > div:last-child {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    button.doneBtn, button.deleteBtn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: #00796b;
+      padding: 4px;
+      transition: color 0.3s ease;
+      user-select: none;
+    }
+    button.doneBtn:hover {
+      color: #004d40;
+    }
+    button.deleteBtn:hover {
+      color: #d32f2f;
+    }
+
+    /* Responsive */
+    @media (max-width: 520px) {
+      form {
+        grid-template-columns: 1fr;
+      }
+      form button {
+        grid-column: 1 / -1;
+        justify-self: center;
+        width: 100%;
+      }
+      .filters {
+        max-width: 100%;
+        justify-content: space-between;
+      }
+      #taskList {
+        max-width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>Enhanced Task Manager</h1>
+  <h1>Task Manager ✨</h1>
 
-  <form id="taskForm">
-    <input type="text" id="title" placeholder="Task Title" required />
-    <textarea id="desc" rows="1" placeholder="Description (optional)"></textarea>
-    <input type="date" id="dueDate" required />
-    <select id="type">
-      <option value="home">Home</option>
-      <option value="school">School</option>
-      <option value="work">Work</option>
-      <option value="project1">Project 1</option>
-      <option value="project2">Project 2</option>
+  <form id="taskForm" aria-label="Add new task form">
+    <input
+      type="text"
+      id="taskName"
+      name="taskName"
+      placeholder="Task name"
+      aria-required="true"
+      required
+      autocomplete="off"
+    />
+    <textarea
+      id="taskDescription"
+      name="taskDescription"
+      placeholder="Description"
+      rows="2"
+      aria-label="Task description"
+    ></textarea>
+    <select id="taskType" name="taskType" aria-label="Task type" required>
+      <option value="" disabled selected>Type</option>
+      <option value="feature">Feature</option>
+      <option value="bug">Bug</option>
+      <option value="chore">Chore</option>
     </select>
-    <select id="priority">
+    <select id="taskPriority" name="taskPriority" aria-label="Task priority" required>
+      <option value="" disabled selected>Priority</option>
       <option value="urgent">Urgent</option>
       <option value="high">High</option>
       <option value="medium">Medium</option>
       <option value="low">Low</option>
     </select>
-    <button type="submit">Add Task</button>
+    <input
+      type="date"
+      id="taskDueDate"
+      name="taskDueDate"
+      aria-label="Due date"
+      required
+    />
+    <button type="submit" aria-label="Add Task">➕ Add Task</button>
   </form>
 
-  <div class="filters">
-    <input type="text" id="search" placeholder="Search title..." />
-    <select id="filterStatus">
-      <option value="all">Show All</option>
-      <option value="completed">Completed</option>
-      <option value="pending">Pending</option>
+  <div class="filters" aria-label="Task filters">
+    <input
+      type="text"
+      id="filterName"
+      placeholder="Filter by name..."
+      aria-label="Filter tasks by name"
+      autocomplete="off"
+    />
+    <select id="filterType" aria-label="Filter by type">
+      <option value="">All types</option>
+      <option value="feature">Feature</option>
+      <option value="bug">Bug</option>
+      <option value="chore">Chore</option>
     </select>
-    <select id="filterType">
-      <option value="all">All Types</option>
-      <option value="home">Home</option>
-      <option value="school">School</option>
-      <option value="work">Work</option>
-      <option value="project1">Project 1</option>
-      <option value="project2">Project 2</option>
+    <select id="filterPriority" aria-label="Filter by priority">
+      <option value="">All priorities</option>
+      <option value="urgent">Urgent</option>
+      <option value="high">High</option>
+      <option value="medium">Medium</option>
+      <option value="low">Low</option>
     </select>
-    <select id="sortBy">
-      <option value="dueDate">Sort by Due Date</option>
-      <option value="priority">Sort by Priority</option>
-    </select>
-    <button onclick="clearCompleted()" type="button">Clear Completed</button>
+    <button id="clearFilters" aria-label="Clear all filters">✖ Clear Filters</button>
   </div>
 
-  <div class="task-list" id="taskList"></div>
+  <div id="taskList" class="task-list" aria-live="polite" aria-atomic="true" tabindex="0">
+    <!-- Tasks will appear here -->
+  </div>
 
   <script>
     const form = document.getElementById('taskForm');
     const taskList = document.getElementById('taskList');
-    const filterStatus = document.getElementById('filterStatus');
+    const filterName = document.getElementById('filterName');
     const filterType = document.getElementById('filterType');
-    const sortBy = document.getElementById('sortBy');
-    const search = document.getElementById('search');
+    const filterPriority = document.getElementById('filterPriority');
+    const clearFilters = document.getElementById('clearFilters');
 
-    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    let tasks = [];
 
-    const priorityRank = { urgent: 1, high: 2, medium: 3, low: 4 };
+    // Stickers as emojis for task types
+    const stickers = {
+      feature: '🚀',
+      bug: '🐞',
+      chore: '🧹',
+    };
 
-    function saveTasks() {
-      localStorage.setItem('tasks', JSON.stringify(tasks));
+    function createTaskElement(task) {
+      const taskDiv = document.createElement('div');
+      taskDiv.classList.add('task', `priority-${task.priority}`);
+      if (task.done) taskDiv.classList.add('done');
+
+      taskDiv.innerHTML = `
+        <div>
+          <strong><span class="sticker" aria-hidden="true">${stickers[task.type] || '📌'}</span>${task.name}</strong>
+          <small>${task.description ? task.description : ''}</small>
+          <div class="meta">
+            <span class="badge ${task.type}">${task.type}</span>
+            <span class="priority-badge ${task.priority}">${task.priority}</span>
+            <span>Due: ${task.dueDate}</span>
+          </div>
+        </div>
+        <div>
+          <button aria-label="Mark task '${task.name}' as done" class="doneBtn" title="Toggle done status">✓</button>
+          <button aria-label="Delete task '${task.name}'" class="deleteBtn" title="Delete task">🗑️</button>
+        </div>
+      `;
+
+      taskDiv.querySelector('.doneBtn').onclick = () => {
+        task.done = !task.done;
+        renderTasks();
+      };
+
+      taskDiv.querySelector('.deleteBtn').onclick = () => {
+        tasks = tasks.filter(t => t !== task);
+        renderTasks();
+      };
+
+      return taskDiv;
     }
 
     function renderTasks() {
-      const status = filterStatus.value;
-      const typeFilter = filterType.value;
-      const query = search.value.toLowerCase();
-      const sort = sortBy.value;
-
-      let filtered = tasks.slice();
-
-      if (status === 'completed') {
-        filtered = filtered.filter(t => t.done);
-      } else if (status === 'pending') {
-        filtered = filtered.filter(t => !t.done);
-      }
-
-      if (typeFilter !== 'all') {
-        filtered = filtered.filter(t => t.type === typeFilter);
-      }
-
-      if (query) {
-        filtered = filtered.filter(t => t.title.toLowerCase().includes(query));
-      }
-
-      if (sort === 'dueDate') {
-        filtered.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-      } else if (sort === 'priority') {
-        filtered.sort((a, b) => priorityRank[a.priority] - priorityRank[b.priority]);
-      }
-
       taskList.innerHTML = '';
-
-      filtered.forEach((task, index) => {
-        const div = document.createElement('div');
-        div.className = `task ${task.done ? 'done' : ''} priority-${task.priority}`;
-        div.innerHTML = `
-          <div>
-            <strong>${task.title}</strong><br/>
-            <small>${task.desc || ''}</small><br/>
-            Due: ${task.dueDate} | Type: ${task.type} | Priority: ${task.priority}
-          </div>
-          <div>
-            <button onclick="toggleDone(${index})">${task.done ? 'Undo' : 'Done'}</button>
-            <button onclick="editTask(${index})">Edit</button>
-            <button onclick="deleteTask(${index})">Delete</button>
-          </div>
-        `;
-        taskList.appendChild(div);
+      let filteredTasks = tasks.filter(task => {
+        return (
+          task.name.toLowerCase().includes(filterName.value.toLowerCase()) &&
+          (filterType.value === '' || task.type === filterType.value) &&
+          (filterPriority.value === '' || task.priority === filterPriority.value)
+        );
+      });
+      filteredTasks.forEach(task => {
+        taskList.appendChild(createTaskElement(task));
       });
     }
 
-    function toggleDone(index) {
-      tasks[index].done = !tasks[index].done;
-      saveTasks();
-      renderTasks();
-    }
-
-    function deleteTask(index) {
-      if (confirm('Delete this task?')) {
-        tasks.splice(index, 1);
-        saveTasks();
-        renderTasks();
-      }
-    }
-
-    function editTask(index) {
-      const task = tasks[index];
-      const newTitle = prompt('Edit title:', task.title);
-      if (newTitle !== null) {
-        task.title = newTitle.trim() || task.title;
-        const newDesc = prompt('Edit description:', task.desc || '');
-        task.desc = newDesc;
-        saveTasks();
-        renderTasks();
-      }
-    }
-
-    function clearCompleted() {
-      if (confirm('Clear all completed tasks?')) {
-        tasks = tasks.filter(t => !t.done);
-        saveTasks();
-        renderTasks();
-      }
-    }
-
-    form.addEventListener('submit', e => {
+    form.onsubmit = (e) => {
       e.preventDefault();
-      const newTask = {
-        title: document.getElementById('title').value,
-        desc: document.getElementById('desc').value,
-        dueDate: document.getElementById('dueDate').value,
-        type: document.getElementById('type').value,
-        priority: document.getElementById('priority').value,
+      const name = form.taskName.value.trim();
+      const description = form.taskDescription.value.trim();
+      const type = form.taskType.value;
+      const priority = form.taskPriority.value;
+      const dueDate = form.taskDueDate.value;
+
+      if (!name || !type || !priority || !dueDate) return;
+
+      tasks.push({
+        name,
+        description,
+        type,
+        priority,
+        dueDate,
         done: false
-      };
-      tasks.push(newTask);
-      saveTasks();
+      });
+
       form.reset();
       renderTasks();
-    });
+    };
 
-    [filterStatus, filterType, sortBy, search].forEach(el => {
-      el.addEventListener('input', renderTasks);
-    });
+    filterName.oninput = renderTasks;
+    filterType.onchange = renderTasks;
+    filterPriority.onchange = renderTasks;
+
+    clearFilters.onclick = () => {
+      filterName.value = '';
+      filterType.value = '';
+      filterPriority.value = '';
+      renderTasks();
+    };
 
     renderTasks();
   </script>
